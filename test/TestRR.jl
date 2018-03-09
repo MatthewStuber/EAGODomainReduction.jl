@@ -1,5 +1,7 @@
-workspace()
+module TestRR
 
+using Compat
+using Compat.Test
 using IntervalArithmetic
 using Clp
 using EAGODomainReduction
@@ -28,4 +30,10 @@ in_opt = t_solver(ClpSolver())
 opt = test_opt(2,2,f,g,in_opt,[2 -1],[3 0],[1,2],[1,2])
 X = [Interval(0.0,2.0) for i=1:2]
 STD_Linear_RR!(X,[opt],7.0)
-println("Standard Range Reduced X: ", X)
+
+@test 0.5-1E-4 <= X[1].lo <= 0.5+1E-4
+@test 1.25-1E-4 <= X[1].hi <= 1.25+1E-4
+@test 1.0-1E-4 <= X[2].lo <= 1.0+1E-4
+@test 1.75-1E-4 <= X[2].hi <= 1.75+1E-4 
+
+end

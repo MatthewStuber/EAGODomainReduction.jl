@@ -246,7 +246,7 @@ function DAGContractor!(X::Vector{Interval{T}},x::TapeList,r) where {T}
       Xprev = x.sto[j].Intv_Storage[1:length(X)]
     end
   end
-  X = Xprev
+  X[:] = Xprev
 end
 
 """

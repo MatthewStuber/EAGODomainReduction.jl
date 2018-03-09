@@ -18,8 +18,8 @@ function STD_LP_Probe!(X::Vector{Interval{Float64}},opt,UBD::Float64)
     x0::Vector{Float64} = (Xlo + Xhi)/2.0
     x_SMC::Vector{SMCg{opt[1].numVar,Float64}} = [SMCg{opt[1].numVar,Float64}(x0[i],
                                                                     x0[i],
-                                                                    seed_g(opt[1].numVar,i),
-                                                                    seed_g(opt[1].numVar,i),
+                                                                    seed_g(Float64,opt[1].numVar,i),
+                                                                    seed_g(Float64,opt[1].numVar,i),
                                                                     X[i],
                                                                     false,
                                                                     X,
@@ -91,8 +91,8 @@ function Imp_LP_Probe!(X::Vector{Interval{Float64}},opt,UBD::Float64)
     x0::Vector{Float64} = (Xlo + Xhi)/2.0
     x_SMC::Vector{SMCg{opt[1].numVar,Float64}} = [SMCg{opt[1].numVar,Float64}(x0[i],
                                                                     x0[i],
-                                                                    seed_g(opt[1].numVar,i),
-                                                                    seed_g(opt[1].numVar,i),
+                                                                    seed_g(Float64,opt[1].numVar,i),
+                                                                    seed_g(Float64,opt[1].numVar,i),
                                                                     X[i],
                                                                     false,
                                                                     X,
