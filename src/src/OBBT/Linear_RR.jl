@@ -11,6 +11,7 @@ is the number of constraints, `gL` is the lower bound, `gU` is the upper bound,
 that indicates the upper bound is finite. The upper bound is `UBD::Float64`.
 """
 function STD_Linear_RR!(X::Vector{Interval{Float64}},opt,UBD::Float64)
+
     # gets prior McCormick relaxation setting
     mu_temp::Int64 = copy(EAGOSmoothMcCormickGrad.MC_param.mu)
     set_diff_relax(0)
@@ -23,23 +24,56 @@ function STD_Linear_RR!(X::Vector{Interval{Float64}},opt,UBD::Float64)
     # computes relaxation of g and f
     x_mc::Vector{SMCg{opt[1].numVar,Float64}} = [SMCg{opt[1].numVar,Float64}(x0[i],x0[i],seed_g(Float64,i,opt[1].numVar),seed_g(Float64,i,opt[1].numVar),X[i],false,X,x0) for i=1:opt[1].numVar]
     f_mc::SMCg{opt[1].numVar,Float64} = opt[1].f(x_mc)
-    c::Vector{SMCg{opt[1].numVar,Float64}} = opt[1].g(x_mc)
-    c_cv::Vector{Float64} = [c[i].cv for i=1:opt[1].numConstr]
-    c_cc::Vector{Float64} = [c[i].cc for i=1:opt[1].numConstr]
-    dcdx_cv::Array{Float64,2} = Float64[c[i].cv_grad[j] for i=1:opt[1].numConstr,j=1:opt[1].numVar]
-    dcdx_cc::Array{Float64,2} = Float64[-c[i].cc_grad[j] for i=1:opt[1].numConstr,j=1:opt[1].numVar]
-    cval = vcat(c_cv[opt[1].gU_loc]-opt[1].gU[opt[1].gU_loc],-c_cc[opt[1].gL_loc]+opt[1].gL[opt[1].gL_loc])
-    dcdx::Array{Float64,2} = vcat([f_mc.cv_grad[i] for i=1:opt[1].numVar]',
-                                  dcdx_cv[opt[1].gU_loc,:],
-                                  dcdx_cc[opt[1].gL_loc,:])
-    rhs1::Vector{Float64} = [sum([x0[j]*dcdx_cv[i,j] for j=1:opt[1].numVar]) for i=1:opt[1].numConstr]
-    rhs2::Vector{Float64} = [sum([x0[j]*dcdx_cc[i,j] for j=1:opt[1].numVar]) for i=1:opt[1].numConstr]
-    rhs = vcat([UBD + f_mc.cv - sum([x0[i]*f_mc.cv_grad[i] for i=1:opt[1].numVar])],
-               rhs1[opt[1].gU_loc]+opt[1].gU[opt[1].gU_loc]-c_cv[opt[1].gU_loc],
-               rhs2[opt[1].gL_loc]-opt[1].gL[opt[1].gL_loc]+c_cc[opt[1].gL_loc])
+    if opt[1].numConstr>0
+        c::Vector{SMCg{opt[1].numVar,Float64}} = opt[1].g(x_mc)
+        dcdx::SparseMatrixCSC{Float64,Int64} = spzeros(length(opt[1].gL_loc)+length(opt[1].gU_loc)+1,opt[1].numVar)
+    else
+        dcdx = spzeros(1,opt[1].numVar)
+    end
+    # forms coefficients of linear relaxations
+    dcdx[1,:] = f_mc.cv_grad
+    if opt[1].numConstr>0
+        cx_ind1::Int64 = 2
+        for i in opt[1].gL_loc
+            for j=1:opt[1].numVar
+                if (c[i].cv_grad[j] != 0.0)
+                    dcdx[cx_ind1,j] = c[i].cv_grad[j]
+                end
+            end
+            cx_ind1 += 1
+        end
+        for i in opt[1].gU_loc
+            for j=1:opt[1].numVar
+                if (c[i].cc_grad[j] != 0.0)
+                    dcdx[cx_ind1,j] = -c[i].cc_grad[j]
+                end
+            end
+            cx_ind1 += 1
+        end
+    end
+    # forms rhs of linear relaxations
+    if opt[1].numConstr>0
+        rhs::Vector{Float64} = zeros(Float64,length(opt[1].gL_loc)+length(opt[1].gU_loc)+1)
+    else
+        rhs = zeros(Float64,1)
+    end
+    rhs[1] = UBD + f_mc.cv - sum(x0.*f_mc.cv_grad)
+
+    if opt[1].numConstr>0
+        cx_ind2::Int64 = 2
+        for i in opt[1].gU_loc
+            rhs[cx_ind2] = sum(x0[:].*c[i].cv_grad[:])+opt[1].gU[i]-c[i].cv
+            cx_ind2 += 1
+        end
+        for i in opt[1].gL_loc
+            rhs[cx_ind2] = sum(-x0[:].*c[i].cc_grad[:])-opt[1].gL[i]+c[i].cc
+            cx_ind2 += 1
+        end
+    end
 
     # solve nx lower & upper bounding problems
     for i=1:opt[1].numVar
+
         # solve lower bounding problems
         c_obj::Vector{Float64} = [j == i ? 1.0 : 0.0 for j=1:opt[1].numVar]
         model = buildlp(c_obj, dcdx, '<', rhs, l, u, opt[1].solver.LP_solver)
@@ -51,6 +85,7 @@ function STD_Linear_RR!(X::Vector{Interval{Float64}},opt,UBD::Float64)
             feas = false
             return feas
         end
+
         # solve upper bounding problems
         c_obj[i] = -1.0
         model = buildlp(c_obj, dcdx, '<', rhs, l, u, opt[1].solver.LP_solver)
@@ -67,6 +102,7 @@ function STD_Linear_RR!(X::Vector{Interval{Float64}},opt,UBD::Float64)
     # reset McCormick relaxation to original value
     set_diff_relax(mu_temp)
 
+    # stores outputs
     X[:] = [Interval(l[i],u[i]) for i=1:opt[1].numVar]
     return true
 end

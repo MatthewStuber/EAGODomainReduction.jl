@@ -13,7 +13,3 @@ println("done (took $t seconds).")
 println("Testing Range Reduction...")
 t = @elapsed include("TestRR.jl")
 println("done (took $t seconds).")
-
-println("Testing Probing...")
-t = @elapsed include("TestProbing.jl")
-println("done (took $t seconds).")
