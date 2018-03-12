@@ -110,7 +110,7 @@ is the number of constraints, `gL` is the lower bound, `gU` is the upper bound,
 `gL_Loc` is an index to indicate the lower bound is finite, and `gU_Loc` is an index
 that indicates the upper bound is finite. The upper bound is `UBD::Float64`.
 """
-function Imp_LP_Probe!(P::Vector{Interval{Float64}},opt,UBD::Float64)
+function Imp_LP_Probe!(X::Vector{Interval{Float64}},opt,UBD::Float64)
 
     # constructs LP relaxation
     Xlo::Vector{Float64} = [X[i].lo for i=1:opt[1].numVar]

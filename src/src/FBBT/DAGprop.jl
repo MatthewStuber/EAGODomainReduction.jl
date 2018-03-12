@@ -48,6 +48,8 @@ immutable Tape
   gL::Float64
   gU::Float64
   cnsts::Vector
+  fix_val
+  fix_ind
 end
 
 """
@@ -66,6 +68,8 @@ Tape() =  ([],
            [],
            0.0,
            0.0,
+           [],
+           [],
            [])
 
 """
@@ -108,7 +112,40 @@ function Generate_Tape(exp::Expr,nx::Int64,gL,gU)
   tape = Tape(deepcopy(EdgeList),deepcopy(HeaderList),
                       NodeCounter,Interval[Interval(-Inf,Inf) for i=1:NodeCounter],
                       FW_Arg,[Expr(:call) for i=1:NodeCounter],nx,
-                      RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,deepcopy(ConstList))
+                      RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,
+                      deepcopy(ConstList),[],[])
+  global EdgeList = []
+  global HeaderList = Symbol[]
+  global ConstList = []
+  return tape
+end
+
+"""
+    Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals)
+
+Generates the tape of the provided expression `exp::Expr` assuming the expression
+depends on `nx::Int64` variables and has lower bounds `gL` and upper bounds `gU`.
+The variables in the expression must be off the form `x[1],...,x[nx]`. Variables `x[nx+1]`
+to `x[end]` are fixed to the values in the `vals` array.
+"""
+function Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals)
+
+  gL,gU = Float64(gL),Float64(gU)
+
+  # Sets up node finding object and generates graph to global
+  X_NodeF::Vector{Any} = vcat(Any[NodeFinder(i) for i=1:nx],vals)
+  global NodeCounter = deepcopy(nx)
+  fX! = @eval x::Vector{NodeFinder} -> $exp
+  Base.invokelatest(fX!,X_NodeF)
+
+  # generates forward tape
+  FW_Arg = [[EdgeList[i][j][1] for j=1:length(EdgeList[i])] for i=1:length(EdgeList)]
+  RW_Arg = [vcat([EdgeList[i][1][2]],[EdgeList[i][j][1] for j=1:length(EdgeList[i])]) for i=1:length(EdgeList)]
+  tape = Tape(deepcopy(EdgeList),deepcopy(HeaderList),
+                      NodeCounter,Interval[Interval(-Inf,Inf) for i=1:NodeCounter],
+                      FW_Arg,[Expr(:call) for i=1:NodeCounter],nx,
+                      RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,
+                      deepcopy(ConstList),vals)
   global EdgeList = []
   global HeaderList = Symbol[]
   global ConstList = []
@@ -128,6 +165,27 @@ function Generate_TapeList(exprs::Vector{Expr},nx::Int64,gL::Vector{Float64},gU:
   tapelist = []
   for i=1:length(exprs)
     push!(tapelist,Generate_Tape(exprs[i],nx,gL[i],gU[i]))
+  end
+  return TapeList(tapelist)
+end
+
+"""
+    Generate_Fixed_TapeList(exprs::Vector{Expr},nx::Int64,gL::Vector{Float64},gU::Vector{Float64},val_arr)
+
+Generates the tape list for each provided expression `exprs[i]` in
+`exprs::Vector{Expr}` assuming all expressions depend on `nx::Int64` variables
+and has lower bounds `gL[i]` and upper bounds `gU[i]`. The variables in the
+expression must be off the form `x[1],...,x[nx]`. Variables `x[nx+1]`
+to `x[end]` are fixed to the values in the `vals` array.
+"""
+function Generate_Fixed_TapeList(exprs::Vector{Expr},nx::Int64,gL::Vector{Float64},
+                                 gU::Vector{Float64},val_arr)
+  @assert length(exprs) == length(gL) == length(gU)
+  tapelist = []
+  for i=1:length(exprs)
+      for j=1:length(val_arr)
+          push!(tapelist,Generate_Fixed_Tape(exprs[i],nx,gL[i],gU[i],val_arr[j]))
+      end
   end
   return TapeList(tapelist)
 end

@@ -18,9 +18,9 @@ import IntervalContractors: plus_rev, minus_rev, mul_rev, power_rev, sqr_rev,
                             asin_rev, log_rev, exp_rev, inv_rev
 
 # exports main FBBT functions
-export Generate_Tape, Generate_TapeList, FFBT_Refine, SetConstraint!,
-       SetVarBounds!, GetVarBounds, ForwardPass!, ReversePass!,
-       DAGContractor!, NodeFinder, Tape, TapeList, getDAG
+export Generate_Tape, Generate_TapeList, Generate_Fixed_Tape, Generate_Fixed_TapeList,
+       FFBT_Refine, SetConstraint!, SetVarBounds!, GetVarBounds, ForwardPass!,
+       ReversePass!, DAGContractor!, NodeFinder, Tape, TapeList, getDAG
 
 # exports supplemental reverse contractors (push to IntervalContractor Library)
 export tanh_rev, div_revDR, acos_rev, atan_rev, sinh_rev, cosh_rev, tanh_rev,
