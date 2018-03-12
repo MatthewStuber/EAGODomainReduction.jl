@@ -49,7 +49,6 @@ immutable Tape
   gU::Float64
   cnsts::Vector
   fix_val
-  fix_ind
 end
 
 """
@@ -68,7 +67,6 @@ Tape() =  ([],
            [],
            0.0,
            0.0,
-           [],
            [],
            [])
 
@@ -113,7 +111,7 @@ function Generate_Tape(exp::Expr,nx::Int64,gL,gU)
                       NodeCounter,Interval[Interval(-Inf,Inf) for i=1:NodeCounter],
                       FW_Arg,[Expr(:call) for i=1:NodeCounter],nx,
                       RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,
-                      deepcopy(ConstList),[],[])
+                      deepcopy(ConstList),[])
   global EdgeList = []
   global HeaderList = Symbol[]
   global ConstList = []
@@ -135,7 +133,7 @@ function Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals)
   # Sets up node finding object and generates graph to global
   X_NodeF::Vector{Any} = vcat(Any[NodeFinder(i) for i=1:nx],vals)
   global NodeCounter = deepcopy(nx)
-  fX! = @eval x::Vector{NodeFinder} -> $exp
+  fX! = @eval x::Vector{Any} -> $exp
   Base.invokelatest(fX!,X_NodeF)
 
   # generates forward tape
@@ -295,10 +293,11 @@ and the initial interval bounds `X::Vector{Interval{T}}`.
 function DAGContractor!(X::Vector{Interval{T}},x::TapeList,r) where {T}
   Xprev::Vector{Interval} = copy(X) # sets variable bounds on first Array to Box Bounds
   SetConstraintNode!(x)
-  SetConstantNode!(x)
+  #SetConstantNode!(x)
   for i=1:r
     for j=1:length(x.sto)
       SetVarBounds!(x.sto[j],Xprev) # take refined bounds from previous graph
+      SetConstantNode!(x)
       ForwardPass!(x.sto[j]) # run forward and reverse pass
       ReversePass!(x.sto[j])
       Xprev = x.sto[j].Intv_Storage[1:length(X)]
