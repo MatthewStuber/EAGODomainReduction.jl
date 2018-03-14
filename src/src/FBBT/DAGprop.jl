@@ -273,6 +273,18 @@ function ForwardPass!(x::Tape)
 end
 
 """
+    ForwardPassOne!(x::Tape)
+
+Performs a forward contractor pass using tape `x::Tape` with some uninitialized nodes.
+"""
+function ForwardPassOne!(x::Tape)
+  for i=1:length(x.Edge_List)
+    x.FW_Expr[i].args = vcat([x.Head_List[i]],x.Intv_Storage[x.FW_Arg[i]])
+    x.Intv_Storage[x.Edge_List[i][1][2]] = eval(x.FW_Expr[i])
+  end
+end
+
+"""
     ReversePass!(x::Tape)
 
 Performs a reverse contractor pass using tape `x::Tape`.
@@ -293,12 +305,15 @@ and the initial interval bounds `X::Vector{Interval{T}}`.
 function DAGContractor!(X::Vector{Interval{T}},x::TapeList,r) where {T}
   Xprev::Vector{Interval} = copy(X) # sets variable bounds on first Array to Box Bounds
   SetConstraintNode!(x)
-  #SetConstantNode!(x)
   for i=1:r
     for j=1:length(x.sto)
       SetVarBounds!(x.sto[j],Xprev) # take refined bounds from previous graph
       SetConstantNode!(x)
-      ForwardPass!(x.sto[j]) # run forward and reverse pass
+      if (i == 1)
+        ForwardPassOne!(x.sto[j])
+      else
+        ForwardPass!(x.sto[j]) # run forward and reverse pass
+      end
       ReversePass!(x.sto[j])
       Xprev = x.sto[j].Intv_Storage[1:length(X)]
     end
