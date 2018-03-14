@@ -1,7 +1,9 @@
 # EAGODomainReduction.jl
 Domain Reduction Procedures in Global Optimization
 
-## Author
+## Authors
+
+ [Matthew Wilhelm](httppsor.uconn.eduour-team), Department of Chemical and Biomolecular Engineering,  University of Connecticut (UCONN)
 
 ## Installation
 
