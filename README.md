@@ -1,6 +1,8 @@
 # EAGODomainReduction.jl
 Domain Reduction Procedures in Global Optimization
 
+## Author
+
 ## Installation
 
 ```julia
@@ -21,7 +23,7 @@ relaxations.
 - **Implicit Subroutine support:** Supports domain reduction of reduced space lower-bound problems defined through
 relaxation of implicit functions by fixed-point methods.
 
-The routine are used extensively in the `EAGO.jl`[https://github.com/MatthewStuber/EAGO.jl] package solver.
+The routine are used extensively in the [`EAGO.jl`](https://github.com/MatthewStuber/EAGO.jl) package solver.
 Please see the example files for usage cases.
 
 ## Future Work
@@ -32,12 +34,12 @@ Please see the example files for usage cases.
 - Add support for Mixed-Integer NLP.
 
 ## Related Packages
-- **EAGO.jl**[https://github.com/MatthewStuber/EAGO.jl]: A package containing global and robust solvers based mainly on McCormick relaxations.
+- [**EAGO.jl**](https://github.com/MatthewStuber/EAGO.jl): A package containing global and robust solvers based mainly on McCormick relaxations.
 This package supports a JuMP and MathProgBase interface.
-- **IntervalConstraintProgramming.jl**[https://github.com/JuliaIntervals/IntervalConstraintProgramming.jl]: Provides algorithms that furnish bounds
+- [**IntervalConstraintProgramming.jl**](https://github.com/JuliaIntervals/IntervalConstraintProgramming.jl): Provides algorithms that furnish bounds
 on constraints defined by expressions. The constraint propagation routine in **EAGODomainReduction.jl** can generate tape objects that are
 reusable for generically-defined functions. In addition, we use a `Vector{Interval}` storage object that allows for in-place mutation of intervals.
-- **IntervalContractors.jl**[https://github.com/JuliaIntervals/IntervalContractors.jl]: Provides a library of reverse interval contractors.
+- [**IntervalContractors.jl**](https://github.com/JuliaIntervals/IntervalContractors.jl): Provides a library of reverse interval contractors.
 
 ## References
 - Benhamou, F., & Older, W.J. (1997). Applying interval arithmetic to real, integer, and boolean constraints. The Journal of Logic Programming, 32, 1–24.
