@@ -1,6 +1,6 @@
 #!/usr/bin/env julia
 
-using EAGOBranchBound
+using EAGODomainReduction
 
 println("Testing Duality-Based Bound Tightening...")
 t = @elapsed include("TestDual.jl")
