@@ -2,7 +2,7 @@
 Domain Reduction Procedures in Global Optimization
 
 [![Build Status](https://travis-ci.org/MatthewStuber/EAGODomainReduction.jl.svg?branch=master)](https://travis-ci.org/MatthewStuber/EAGODomainReduction.jl)
-[![Coverage Status](https://coveralls.io/repos/MatthewStuber/EAGODomainReduction.jl/badge.svg?branch=master&service=github)](https://coveralls.io/github/MatthewStuber/EAGODomainReduction.jl?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/MatthewStuber/EAGODomainReduction.jl/badge.svg?branch=master)](https://coveralls.io/github/MatthewStuber/EAGODomainReduction.jl?branch=master)
 [![codecov.io](http://codecov.io/github/MatthewStuber/EAGODomainReduction.jl/coverage.svg?branch=master)](http://codecov.io/github/MatthewStuber/EAGODomainReduction.jl?branch=master)
 
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://MatthewStuber.github.io/EAGO.jl/stable)
