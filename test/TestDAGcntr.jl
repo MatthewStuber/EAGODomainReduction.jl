@@ -19,18 +19,18 @@ variable box X = [1,20]^5
 mult_expr = [:(x[1]+x[2]^2)
              :(x[1]+x[5])
             ]
-tapelist_out = Generate_TapeList(mult_expr,5,[-1.0,2.0],[2.0,3.0])
-X = [Interval(0.5,10.0) for i=1:5]
-DAGContractor!(X,tapelist_out,6)
-@test 0.5-1E-4 <= X[1].lo <= 0.5+1E-4
-@test 0.5-1E-4 <= X[2].lo <= 0.5+1E-4
-@test 0.5-1E-4 <= X[3].lo <= 0.5+1E-4
-@test 0.5-1E-4 <= X[4].lo <= 0.5+1E-4
-@test 0.5-1E-4 <= X[5].lo <= 0.5+1E-4
-@test 1.75-1E-4 <= X[1].hi <= 1.75+1E-4
-@test 1.22475-1E-4 <= X[2].hi <= 1.22475+1E-4
-@test 10-1E-4 <= X[3].hi <= 10+1E-4
-@test 10-1E-4 <= X[4].hi <= 10+1E-4
-@test 2.5-1E-4 <= X[5].hi <= 2.5+1E-4
+X = [Interval(-10.0,20.0) for i=1:5]
+ftapelist_out = Generate_Fixed_TapeList(mult_expr,4,[-8.0,0.5],[2.0,4.5],[[5.0]])
+DAGContractor!(X,ftapelist_out,6)
+@test -10-1E-4 <= X[1].lo <= -10+1E-4
+@test 0-1E-4 <= X[2].lo <= 0+1E-4
+@test -10-1E-4 <= X[3].lo <= -10+1E-4
+@test -10-1E-4 <= X[4].lo <= -10+1E-4
+@test 5-1E-4 <= X[5].lo <= 5+1E-4
+@test 20-1E-4 <= X[1].hi <= 20+1E-4
+@test 20-1E-4 <= X[2].hi <= 20+1E-4
+@test 20-1E-4 <= X[3].hi <= 20+1E-4
+@test 20-1E-4 <= X[4].hi <= 20+1E-4
+@test 5-1E-4 <= X[5].hi <= 5+1E-4
 
 end

@@ -29,13 +29,13 @@ UBD = 2.0
 nx = 2
 Variable_DR_Imp!(X,mult_lo,mult_hi,LBD,UBD,nx)
 println("X post implicit duality-based bound tighteing: ", X)
-@test 1.0-1E-4 <= Y[1].lo <= 1.0+1E-4
-@test 4.0-1E-4 <= Y[1].hi <= 4.0+1E-4
-@test 1.0-1E-4 <= Y[2].lo <= 1.0+1E-4
-@test 4.0-1E-4 <= Y[2].hi <= 4.0+1E-4
-@test 3.97999-1E-4 <= Y[3].lo <= 3.97999+1E-4
-@test 4.0-1E-4 <= Y[3].hi <= 4.0+1E-4
-@test 3.0-1E-4 <= Y[4].lo <= 3.0+1E-4
-@test 4.0-1E-4 <= Y[4].hi <= 4.0+1E-4
+@test 1.0-1E-4 <= X[1].lo <= 1.0+1E-4
+@test 4.0-1E-4 <= X[1].hi <= 4.0+1E-4
+@test 1.0-1E-4 <= X[2].lo <= 1.0+1E-4
+@test 4.0-1E-4 <= X[2].hi <= 4.0+1E-4
+@test 3.97999-1E-4 <= X[3].lo <= 3.97999+1E-4
+@test 4.0-1E-4 <= X[3].hi <= 4.0+1E-4
+@test 3.0-1E-4 <= X[4].lo <= 3.0+1E-4
+@test 4.0-1E-4 <= X[4].hi <= 4.0+1E-4
 
 end
