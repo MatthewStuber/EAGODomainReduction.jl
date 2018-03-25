@@ -134,12 +134,21 @@ function Imp_Linear_RR!(X::Vector{Interval{Float64}},opt, UBD::Float64)
 
     # computes relaxation of g and f
     p_mc::Vector{SMCg{np,Float64}} = [SMCg{np,Float64}(x0[i],x0[i],seed_g(Float64,opt[1].numVar,i),seed_g(Float64,opt[1].numVar,i),X[i],false,X,x0) for i=1:opt[1].numVar]
-    out,z,x_mc = GenExpansionParams(opt[1].solver.Implicit_Options.h,
-                                    opt[1].solver.Implicit_Options.hj,
-                                    X[1:nx],
-                                    X[(nx+1):(nx+np)],
-                                    p0,
-                                    opt[1].solver.Implicit_Options.Param)
+    if (opt[1].solver.Implicit_Options.Inplace)
+        out,z,x_mc = InGenExpansionParams(opt[1].solver.Implicit_Options.h,
+                                          opt[1].solver.Implicit_Options.hj,
+                                          X[1:nx],
+                                          X[(nx+1):(nx+np)],
+                                          p0,
+                                          opt[1].solver.Implicit_Options.Param)
+    else
+        out,z,x_mc = GenExpansionParams(opt[1].solver.Implicit_Options.h,
+                                        opt[1].solver.Implicit_Options.hj,
+                                        X[1:nx],
+                                        X[(nx+1):(nx+np)],
+                                        p0,
+                                        opt[1].solver.Implicit_Options.Param)
+    end
     f_mc::SMCg{np,Float64} = opt[1].solver.ImplicitOpts.f(x_mc[end],p_SMC)
     c::Vector{SMCg{np,Float64}} = opt[1].solver.ImplicitOpts.g(x_mc[end],p_SMC)
 
