@@ -4,6 +4,7 @@ module EAGODomainReduction
 
 using MathProgBase
 using EAGOSmoothMcCormickGrad
+using EAGOIntervalArithmetic
 using IntervalArithmetic
 using IntervalContractors
 

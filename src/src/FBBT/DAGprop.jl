@@ -35,11 +35,11 @@ A storage object to record expressions in a tape. The fields are:
 * `gU::Float64`: Upper bound on the expression gU>g(x)
 * `cnsts::Vector`: List of constant values and their location
 """
-immutable Tape
+immutable Tape{V}
   Edge_List::Vector
   Head_List::Vector{Symbol}
   Last_Node::Int64
-  Intv_Storage::Vector{Interval}
+  Intv_Storage::Vector{V}
   FW_Arg::Vector{Array{Int64}}
   FW_Expr::Vector
   nvar::Float64
@@ -56,10 +56,10 @@ end
 
 Initializes an empty tape for storage.
 """
-Tape() =  ([],
+Tape(V) =  ([],
            Symbol[],
            0,
-           Interval[],
+           V[],
            [[1]],
            [],
            0.0,
@@ -69,14 +69,14 @@ Tape() =  ([],
            0.0,
            [],
            [])
-
+Tape() = Tape(MCInterval{Float64})
 """
     TapeList
 
 A storage object for a list of tapes. Has a single field sto which is an array
 of Tape objects.
 """
-immutable TapeList
+immutable TapeList{V}
   sto::Any
 end
 
@@ -85,7 +85,8 @@ end
 
 Initializes an empty tapelist object
 """
-TapeList() = TapeList([Tape()])
+TapeList(::Type{V}) where {V} = TapeList{V}([Tape(V)])
+TapeList() = TapeList{MCIntervalFloat}([Tape()])
 
 """
     Generate_Tape(exp::Expr,nx::Int64,gL,gU)
@@ -94,7 +95,7 @@ Generates the tape of the provided expression `exp::Expr` assuming the expressio
 depends on `nx::Int64` variables and has lower bounds `gL` and upper bounds `gU`.
 The variables in the expression must be off the form `x[1],...,x[nx]`.
 """
-function Generate_Tape(exp::Expr,nx::Int64,gL,gU)
+function Generate_Tape(exp::Expr,nx::Int64,gL,gU) where {V}
 
   gL,gU = Float64(gL),Float64(gU)
 
@@ -107,8 +108,8 @@ function Generate_Tape(exp::Expr,nx::Int64,gL,gU)
   # generates forward tape
   FW_Arg = [[EdgeList[i][j][1] for j=1:length(EdgeList[i])] for i=1:length(EdgeList)]
   RW_Arg = [vcat([EdgeList[i][1][2]],[EdgeList[i][j][1] for j=1:length(EdgeList[i])]) for i=1:length(EdgeList)]
-  tape = Tape(deepcopy(EdgeList),deepcopy(HeaderList),
-                      NodeCounter,Interval[Interval(-Inf,Inf) for i=1:NodeCounter],
+  tape = Tape{V}(deepcopy(EdgeList),deepcopy(HeaderList),
+                      NodeCounter,V[V(-Inf,Inf) for i=1:NodeCounter],
                       FW_Arg,[Expr(:call) for i=1:NodeCounter],nx,
                       RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,
                       deepcopy(ConstList),[])
@@ -126,7 +127,7 @@ depends on `nx::Int64` variables and has lower bounds `gL` and upper bounds `gU`
 The variables in the expression must be off the form `x[1],...,x[nx]`. Variables `x[nx+1]`
 to `x[end]` are fixed to the values in the `vals` array.
 """
-function Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals)
+function Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals) where {V}
 
   gL,gU = Float64(gL),Float64(gU)
 
@@ -140,7 +141,7 @@ function Generate_Fixed_Tape(exp::Expr,nx::Int64,gL,gU,vals)
   FW_Arg = [[EdgeList[i][j][1] for j=1:length(EdgeList[i])] for i=1:length(EdgeList)]
   RW_Arg = [vcat([EdgeList[i][1][2]],[EdgeList[i][j][1] for j=1:length(EdgeList[i])]) for i=1:length(EdgeList)]
   tape = Tape(deepcopy(EdgeList),deepcopy(HeaderList),
-                      NodeCounter,Interval[Interval(-Inf,Inf) for i=1:NodeCounter],
+                      NodeCounter,V[V(-Inf,Inf) for i=1:NodeCounter],
                       FW_Arg,[Expr(:call) for i=1:NodeCounter],nx,
                       RW_Arg,[Expr(:call) for i=1:NodeCounter],gL,gU,
                       deepcopy(ConstList),vals)
@@ -158,13 +159,13 @@ Generates the tape list for each provided expression `exprs[i]` in
 and has lower bounds `gL[i]` and upper bounds `gU[i]`. The variables in the
 expression must be off the form `x[1],...,x[nx]`.
 """
-function Generate_TapeList(exprs::Vector{Expr},nx::Int64,gL::Vector{Float64},gU::Vector{Float64})
+function Generate_TapeList(exprs::Vector{Expr},nx::Int64,gL::Vector{Float64},gU::Vector{Float64}) where {V}
   @assert length(exprs) == length(gL) == length(gU)
   tapelist = []
   for i=1:length(exprs)
     push!(tapelist,Generate_Tape(exprs[i],nx,gL[i],gU[i]))
   end
-  return TapeList(tapelist)
+  return TapeList{V}(tapelist)
 end
 
 """
@@ -193,8 +194,8 @@ end
 
 Sets the terminal interval to `[x.gL,x.gU]` using the bounds in the `x::Tape`.
 """
-function SetConstraintNode!(x::Tape)
-  x.Intv_Storage[x.Last_Node] = Interval(x.gL,x.gU)
+function SetConstraintNode!(x::Tape{V}) where {V}
+  x.Intv_Storage[x.Last_Node] = V(x.gL,x.gU)
 end
 """
     SetConstraintNode!(x::TapeList)
@@ -202,7 +203,7 @@ end
 Sets the terminal interval to `[x.gL[i],x.gU[i]]`  in each tape using the bounds
 in the `x::TapeList[i]`.
 """
-function SetConstraintNode!(x::TapeList)
+function SetConstraintNode!(x::TapeList{V}) where {V}
   for i=1:length(x.sto)
     SetConstraintNode!(x.sto[i])
   end
@@ -213,9 +214,9 @@ end
 
 Sets nodes in constaint value list of tape according to their value.
 """
-function SetConstantNode!(x::Tape)
+function SetConstantNode!(x::Tape{V}) where {V}
   for i=1:length(x.cnsts)
-    x.Intv_Storage[Int64(x.cnsts[i][1])] = Interval(x.cnsts[i][2])
+    x.Intv_Storage[Int64(x.cnsts[i][1])] = V(x.cnsts[i][2])
   end
 end
 """
@@ -224,7 +225,7 @@ end
 Sets nodes in constaint value list of tape according to their value for
 each tape in the tape list.
 """
-function SetConstantNode!(x::TapeList)
+function SetConstantNode!(x::TapeList{V}) where {V}
   for i=1:length(x.sto)
     SetConstantNode!(x.sto[i])
   end
@@ -235,7 +236,7 @@ end
 
 Sets variable nodes to the interval value in `X::Vector{Interval}` in tape.
 """
-function SetVarBounds!(x::Tape,X::Vector{Interval})
+function SetVarBounds!(x::Tape{V},X::Vector{V}) where {V}
   x.Intv_Storage[1:length(X)] = X
 end
 
@@ -245,7 +246,7 @@ end
 Sets variable nodes to the interval value in `X::Vector{Interval}` for all
 elements of the TapeList.
 """
-function SetVarBounds!(x::TapeList,X::Vector{Interval})
+function SetVarBounds!(x::TapeList{V},X::Vector{V}) where {V}
   for i=1:length(x)
     SetVarBounds!(x.sto[i],X)
   end
@@ -302,8 +303,8 @@ end
 Performs a forward-interval contactor propagation `r` times using the `x::TapeList`
 and the initial interval bounds `X::Vector{Interval{T}}`.
 """
-function DAGContractor!(X::Vector{Interval{T}},x::TapeList,r) where {T}
-  Xprev::Vector{Interval} = copy(X) # sets variable bounds on first Array to Box Bounds
+function DAGContractor!(X::Vector{V},x::TapeList{V},r) where {V}
+  Xprev::Vector{V} = copy(X) # sets variable bounds on first Array to Box Bounds
   SetConstraintNode!(x)
   for i=1:r
     for j=1:length(x.sto)
