@@ -22,7 +22,7 @@ function STD_Linear_RR!(X::Vector{Interval{Float64}},opt,UBD::Float64)
     x0::Vector{Float64} = mid.(X)
 
     # computes relaxation of g and f
-    x_mc::Vector{SMCg{opt[1].numVar,Interval{Float64},Float64}} = [SMCg{opt[1].numVar,Float64}(x0[i],x0[i],seed_g(Float64,i,opt[1].numVar),seed_g(Float64,i,opt[1].numVar),X[i],false,X,x0) for i=1:opt[1].numVar]
+    x_mc::Vector{SMCg{opt[1].numVar,Interval{Float64},Float64}} = [SMCg{opt[1].numVar,Interval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,i,opt[1].numVar),seed_g(Float64,i,opt[1].numVar),X[i],false,SVector{opt[1].numVar,Interval{Float64}}(X),SVector{opt[1].numVar,Float64}(x0)) for i=1:opt[1].numVar]
     f_mc::SMCg{opt[1].numVar,Interval{Float64},Float64} = opt[1].f(x_mc)
     if opt[1].numConstr>0
         c::Vector{SMCg{opt[1].numVar,Interval{Float64},Float64}} = opt[1].g(x_mc)
@@ -119,7 +119,7 @@ function STD_Linear_RR!(X::Vector{MCInterval{Float64}},opt,UBD::Float64)
     x0::Vector{Float64} = mid.(X)
 
     # computes relaxation of g and f
-    x_mc::Vector{SMCg{opt[1].numVar,MCInterval{Float64},Float64}} = [SMCg{opt[1].numVar,MCInterval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,i,opt[1].numVar),seed_g(Float64,i,opt[1].numVar),X[i],false,X,x0) for i=1:opt[1].numVar]
+    x_mc::Vector{SMCg{opt[1].numVar,MCInterval{Float64},Float64}} = [SMCg{opt[1].numVar,MCInterval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,i,opt[1].numVar),seed_g(Float64,i,opt[1].numVar),X[i],false,SVector{opt[1].numVar,MCInterval{Float64}}(X),SVector{opt[1].numVar,Float64}(x0)) for i=1:opt[1].numVar]
     f_mc::SMCg{opt[1].numVar,MCInterval{Float64},Float64} = opt[1].f(x_mc)
     if opt[1].numConstr>0
         c::Vector{SMCg{opt[1].numVar,MCInterval{Float64},Float64}} = opt[1].g(x_mc)
@@ -230,7 +230,7 @@ function Imp_Linear_RR!(X::Vector{Interval{Float64}},opt, UBD::Float64)
     x0::Vector{Float64} = (l+u)/2.0
 
     # computes relaxation of g and f
-    p_mc::Vector{SMCg{np,Interval{Float64},Float64}} = [SMCg{np,Interval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,opt[1].numVar,i),seed_g(Float64,opt[1].numVar,i),X[i],false,X,x0) for i=1:opt[1].numVar]
+    p_mc::Vector{SMCg{np,Interval{Float64},Float64}} = [SMCg{np,Interval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,opt[1].numVar,i),seed_g(Float64,opt[1].numVar,i),X[i],false,SVector{opt[1].numVar,Interval{Float64}}(X),SVector{opt[1].numVar,Float64}(x0)) for i=1:opt[1].numVar]
     if (opt[1].solver.Implicit_Options.Inplace)
         out,z,x_mc = InGenExpansionParams(opt[1].solver.Implicit_Options.h,
                                           opt[1].solver.Implicit_Options.hj,
@@ -315,7 +315,7 @@ function Imp_Linear_RR!(X::Vector{Interval{Float64}},opt, UBD::Float64)
     x0::Vector{Float64} = (l+u)/2.0
 
     # computes relaxation of g and f
-    p_mc::Vector{SMCg{np,MCInterval{Float64},Float64}} = [SMCg{np,MCInterval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,opt[1].numVar,i),seed_g(Float64,opt[1].numVar,i),X[i],false,X,x0) for i=1:opt[1].numVar]
+    p_mc::Vector{SMCg{np,MCInterval{Float64},Float64}} = [SMCg{np,MCInterval{Float64},Float64}(x0[i],x0[i],seed_g(Float64,opt[1].numVar,i),seed_g(Float64,opt[1].numVar,i),X[i],false,SVector{opt[1].numVar,MCInterval{Float64}}(X),SVector{opt[1].numVar,Float64}(x0)) for i=1:opt[1].numVar]
     if (opt[1].solver.Implicit_Options.Inplace)
         out,z,x_mc = InGenExpansionParams(opt[1].solver.Implicit_Options.h,
                                           opt[1].solver.Implicit_Options.hj,

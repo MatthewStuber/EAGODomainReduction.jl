@@ -7,6 +7,7 @@ using EAGOSmoothMcCormickGrad
 using EAGOIntervalArithmetic
 using IntervalArithmetic
 using IntervalContractors
+using StaticArrays
 
 # import basic functions to overload
 import Base: +, -, /, *, ^, exp, exp2, exp10, log, log2, log10, sign, step, abs,
